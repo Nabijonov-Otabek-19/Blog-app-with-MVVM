@@ -1,54 +1,55 @@
 package uz.nabijonov.otabek.blogapp.screen
 
+
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import kotlinx.android.synthetic.main.activity_main.*
 import uz.nabijonov.otabek.blogapp.MainViewModel
-import uz.nabijonov.otabek.blogapp.R
 import uz.nabijonov.otabek.blogapp.adapter.PostAdapter
 import uz.nabijonov.otabek.blogapp.adapter.UserAdapter
+import uz.nabijonov.otabek.blogapp.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
+    lateinit var binding: ActivityMainBinding
     lateinit var viewModel: MainViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        swipe.setOnRefreshListener {
+        binding.swipe.setOnRefreshListener {
             loadData()
         }
 
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
-        viewModel.error.observe(this, Observer {
+        viewModel.error.observe(this) {
             Toast.makeText(this, it, Toast.LENGTH_LONG).show()
-        })
+        }
 
-        viewModel.progress.observe(this, Observer {
-            swipe.isRefreshing = it
-        })
+        viewModel.progress.observe(this) {
+            binding.swipe.isRefreshing = it
+        }
 
-        viewModel.usersData.observe(this, Observer {
-            recyclerUsers.layoutManager =
+        viewModel.usersData.observe(this) {
+            binding.recyclerUsers.layoutManager =
                 LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-            recyclerUsers.adapter = UserAdapter(it)
-        })
+            binding.recyclerUsers.adapter = UserAdapter(it)
+        }
 
-        viewModel.postsData.observe(this, Observer {
-            recyclerPosts.layoutManager = LinearLayoutManager(this)
-            recyclerPosts.adapter = PostAdapter(it)
-        })
+        viewModel.postsData.observe(this) {
+            binding.recyclerPosts.layoutManager = LinearLayoutManager(this)
+            binding.recyclerPosts.adapter = PostAdapter(it)
+        }
 
         loadData()
     }
 
-    fun loadData() {
+    private fun loadData() {
         viewModel.getUsers()
         viewModel.getPosts()
     }
